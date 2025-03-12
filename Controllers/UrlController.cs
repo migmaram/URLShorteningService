@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using System.Net;
 using URLShorteningService.Data;
 using URLShorteningService.Models;
@@ -58,6 +60,30 @@ namespace URLShorteningService.Controllers
             return Ok(url);
         }
 
+        [HttpGet("Shorten/{key}/stats")]
+        public IActionResult GetStats(string key)
+        {
+
+            var urlStats =
+                from urls in _context.Urls
+                where urls.Key == key
+                join visits in _context.Visits on urls.Id equals visits.UrlId into urlVisits
+                select new
+                {
+                    urls.Id,
+                    url = urls.LongUrl,
+                    shortCode = urls.Key,
+                    urls.CreatedAt,
+                    urls.UpdatedAt,
+                    accessCount = urlVisits.ToList().Count()
+                };
+
+            if (!urlStats.Any())
+                return NotFound();
+
+            return Ok(urlStats);
+        }
+
         [HttpPut("[action]/{key}")]
         public IActionResult Shorten([FromRoute] string key, [FromBody] Url updatedUrl)
         {
@@ -88,5 +114,6 @@ namespace URLShorteningService.Controllers
 
             return Ok(url);
         }
+
     }
 }
