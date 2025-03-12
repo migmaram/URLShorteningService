@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using URLShorteningService.Data;
 
@@ -11,9 +12,11 @@ using URLShorteningService.Data;
 namespace URLShorteningService.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250311041019_ChangeKeyColumnToUniqueIndex")]
+    partial class ChangeKeyColumnToUniqueIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,7 +36,11 @@ namespace URLShorteningService.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Key")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LongUrl")
@@ -42,6 +49,7 @@ namespace URLShorteningService.Migrations
                         .HasAnnotation("Relational:JsonPropertyName", "Url");
 
                     b.Property<string>("ShortUrl")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -50,8 +58,7 @@ namespace URLShorteningService.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Key")
-                        .IsUnique()
-                        .HasFilter("[Key] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Urls");
                 });

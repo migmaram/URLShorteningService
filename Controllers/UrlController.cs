@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using URLShorteningService.Data;
 using URLShorteningService.Models;
 using URLShorteningService.Tools;
@@ -16,8 +18,9 @@ namespace URLShorteningService.Controllers
         {
             _context = context;
         }
+
         [HttpPost("[action]")]
-        public IActionResult Shorten([FromBody] string longUrl)
+        public IActionResult Shorten([FromBody] Url originalUrl)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
@@ -28,7 +31,7 @@ namespace URLShorteningService.Controllers
             var url = new Url
             {
                 Key = newUniqeKey,
-                LongUrl = longUrl,
+                LongUrl = originalUrl.LongUrl,
                 ShortUrl = $"https://shurlt.com/{newUniqeKey}",
                 CreatedAt = today,
                 UpdatedAt = today
@@ -37,8 +40,53 @@ namespace URLShorteningService.Controllers
             _context.Urls.Add(url);
             _context.SaveChanges();
 
-            return Created();
+            return StatusCode(StatusCodes.Status201Created, url);
         }
 
+        [HttpGet("[action]/{key}")]
+        public IActionResult Shorten([FromRoute] string key)
+        {
+            var url = _context.Urls.FirstOrDefault(u => u.Key == key);
+            
+            if (url == null)
+                return NotFound();
+
+            _context.Visits.Add(new Visit { UrlId = url.Id, 
+                VisitedAt = DateTime.Today });
+            _context.SaveChanges();
+
+            return Ok(url);
+        }
+
+        [HttpPut("[action]/{key}")]
+        public IActionResult Shorten([FromRoute] string key, [FromBody] Url updatedUrl)
+        {
+            var url = _context.Urls.FirstOrDefault(u => u.Key == key);
+
+            if (url == null)
+                return NotFound();
+
+            url.LongUrl = updatedUrl.LongUrl;
+
+            _context.Urls.Update(url);
+            _context.SaveChanges();
+
+            return Ok(url);
+        }
+
+
+        [HttpDelete("Shorten/{key}")]
+        public IActionResult Delete([FromRoute] string key)
+        {
+            var url = _context.Urls.FirstOrDefault(u => u.Key == key);
+
+            if (url == null)
+                return NotFound();
+
+            _context.Urls.Remove(url);
+            _context.SaveChanges();
+
+            return Ok(url);
+        }
     }
 }

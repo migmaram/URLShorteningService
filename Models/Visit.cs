@@ -7,7 +7,6 @@ namespace URLShorteningService.Models
         public int Id { get; set; }
         public Url? Url{ get; set; }
         public int UrlId { get; set; }
-        [Required]
         public DateTime VisitedAt { get; set; }
     }
 }
