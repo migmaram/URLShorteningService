@@ -11,7 +11,7 @@ namespace URLShorteningService.Models
         public int Id { get; set; }
         public string? Key { get; set; }
         [Required]
-        [JsonPropertyName("Url")]
+        [JsonPropertyName("url")]
         public string? LongUrl { get; set; }
         public string? ShortUrl { get; set; }
         public DateTime CreatedAt { get; set; }

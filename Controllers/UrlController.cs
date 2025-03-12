@@ -54,7 +54,7 @@ namespace URLShorteningService.Controllers
                 return NotFound();
 
             _context.Visits.Add(new Visit { UrlId = url.Id, 
-                VisitedAt = DateTime.Today });
+                VisitedAt = DateTime.Now });
             _context.SaveChanges();
 
             return Ok(url);
@@ -93,6 +93,7 @@ namespace URLShorteningService.Controllers
                 return NotFound();
 
             url.LongUrl = updatedUrl.LongUrl;
+            url.UpdatedAt = DateTime.Now;
 
             _context.Urls.Update(url);
             _context.SaveChanges();
@@ -114,6 +115,5 @@ namespace URLShorteningService.Controllers
 
             return Ok(url);
         }
-
     }
 }
