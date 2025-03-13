@@ -4,12 +4,12 @@ namespace URLShorteningService.Tools
 {
     public interface IRepository<TEntity>
     {
-        TEntity GetByKey(string key);
-        void Add(TEntity data);
-        bool AnyByKey(string key);
-        int FilteredCount(Expression<Func<TEntity, bool>> filter);
-        bool DeleteByKey(string key);
+        Task<TEntity> GetByKeyAsync(string key);
+        Task AddAsync(TEntity data);
+        Task<bool> AnyByKeyAsync(string key);
+        Task<int> FilteredCountAsync(Expression<Func<TEntity, bool>> filter);
+        Task<bool> DeleteByKeyAsync(string key);
         void Update(TEntity data);
-        void Save();
+        Task SaveAsync();
     }
 }

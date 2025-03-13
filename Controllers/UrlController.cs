@@ -25,12 +25,12 @@ namespace URLShorteningService.Controllers
         }
 
         [HttpPost("[action]")]
-        public IActionResult Shorten([FromBody] Url originalUrl)
+        public async Task<IActionResult> Shorten([FromBody] Url originalUrl)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var newUniqeKey = _sequencer.GenerateKey();
+            var newUniqeKey = await _sequencer.GenerateKeyAsync();
             var today = DateTime.Now;
 
             var url = new Url
@@ -42,36 +42,37 @@ namespace URLShorteningService.Controllers
                 UpdatedAt = today
             };
 
-            _unitOfWork.Urls.Add(url);
-            _unitOfWork.Save();
+            await _unitOfWork.Urls.AddAsync(url);
+            await _unitOfWork.SaveAsync();
 
             return StatusCode(StatusCodes.Status201Created, url);
         }
 
         [HttpGet("[action]/{key}")]
-        public IActionResult Shorten([FromRoute] string key)
+        public async Task<IActionResult> Shorten([FromRoute] string key)
         {
-            var url = _unitOfWork.Urls.GetByKey(key);
+            var url = await _unitOfWork.Urls.GetByKeyAsync(key);
 
             if (url == null)
                 return NotFound();
 
-            _unitOfWork.Visits.Add(
+            await _unitOfWork.Visits.AddAsync(
                 new Visit
                 {
                     UrlId = url.Id,
                     VisitedAt = DateTime.Now
-                });
+                }
+            );
 
-            _unitOfWork.Save();
+            await _unitOfWork.SaveAsync();
 
             return Ok(url);
         }
 
         [HttpGet("Shorten/{key}/stats")]
-        public IActionResult GetStats(string key)
+        public async Task<IActionResult> GetStats(string key)
         {
-            var url = _unitOfWork.Urls.GetByKey(key);
+            var url = await _unitOfWork.Urls.GetByKeyAsync(key);
 
             if (url == null)
                 return NotFound();
@@ -83,7 +84,7 @@ namespace URLShorteningService.Controllers
                 url.Key,
                 url.CreatedAt,
                 url.UpdatedAt,
-                accessCount = _unitOfWork.Visits.FilteredCount(visit => 
+                accessCount = await _unitOfWork.Visits.FilteredCountAsync(visit => 
                     visit.UrlId == url.Id)
             };
 
@@ -91,12 +92,12 @@ namespace URLShorteningService.Controllers
         }
 
         [HttpPut("[action]/{key}")]
-        public IActionResult Shorten([FromRoute] string key, [FromBody] Url url)
+        public async Task<IActionResult> Shorten([FromRoute] string key, [FromBody] Url url)
         {
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var existingUrl = _unitOfWork.Urls.GetByKey(key);
+            var existingUrl =await _unitOfWork.Urls.GetByKeyAsync(key);
 
             if (existingUrl == null)
                 return NotFound();
@@ -105,21 +106,21 @@ namespace URLShorteningService.Controllers
             existingUrl.UpdatedAt = DateTime.Now;
 
             _unitOfWork.Urls.Update(existingUrl);
-            _unitOfWork.Save();
+            await _unitOfWork.SaveAsync();
 
             return Ok(existingUrl);
         }
 
 
         [HttpDelete("Shorten/{key}")]
-        public IActionResult Delete([FromRoute] string key)
+        public async Task<IActionResult> Delete([FromRoute] string key)
         {
-            var deleted = _unitOfWork.Urls.DeleteByKey(key);
+            var deleted = await _unitOfWork.Urls.DeleteByKeyAsync(key);
 
             if (!deleted)
                 return NotFound();
 
-            _unitOfWork.Save();
+            await _unitOfWork.SaveAsync();
             return NoContent();
         }
     }

@@ -6,6 +6,6 @@ namespace URLShorteningService.Tools
     {
         public IRepository<Url> Urls { get; }
         public IRepository<Visit> Visits { get; }
-        public void Save();
+        public Task SaveAsync();
     }
 }

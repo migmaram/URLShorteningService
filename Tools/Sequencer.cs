@@ -18,7 +18,7 @@ namespace URLShorteningService.Tools
         private static readonly string Characters = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
         private static readonly int KeyLenght = 6;
 
-        public string GenerateKey()
+        public async Task<string> GenerateKeyAsync()
         {
             //long currentValue;
             bool isUnique = false;
@@ -40,7 +40,7 @@ namespace URLShorteningService.Tools
                 //key = Encode(currentValue);
 
                 key = RandomKey();
-                isUnique = !_unitOfWork.Urls.AnyByKey(key);
+                isUnique = !await _unitOfWork.Urls.AnyByKeyAsync(key);
                 retryCount++;
 
             } while (!isUnique);

@@ -15,16 +15,16 @@ namespace URLShorteningService.Tools
             _dbSet = _context.Set<TEntity>();
         }
 
-        public void Add(TEntity data) => _dbSet.Add(data);
+        public async Task AddAsync(TEntity data) => await _dbSet.AddAsync(data);
 
-        public bool AnyByKey(string key) => _dbSet.Any(entity =>
+        public async Task<bool> AnyByKeyAsync(string key) => await _dbSet.AnyAsync(entity =>
             EF.Property<string>(entity, "Key") == key);
 
-        public int FilteredCount(Expression<Func<TEntity, bool>> filter) => _dbSet.Where(filter).Count();
+        public async Task<int> FilteredCountAsync(Expression<Func<TEntity, bool>> filter) => await _dbSet.Where(filter).CountAsync();
 
-        public bool DeleteByKey(string key)
+        public async Task<bool> DeleteByKeyAsync(string key)
         {
-            var toDelete = _dbSet.FirstOrDefault(entity =>
+            var toDelete = await _dbSet.FirstOrDefaultAsync(entity =>
             EF.Property<string>(entity, "Key") == key);
 
             if (toDelete == null)
@@ -33,11 +33,10 @@ namespace URLShorteningService.Tools
             _dbSet.Remove(toDelete);
             return true;
         }
-        public TEntity GetByKey(string key) => _dbSet.FirstOrDefault(entity =>
-            EF.Property<string>(entity, "Key") == key) ??
-            throw new NullReferenceException($"Not record found with the key: {key} :(");
+        public async Task<TEntity> GetByKeyAsync(string key) => await _dbSet.FirstOrDefaultAsync(entity =>
+            EF.Property<string>(entity, "Key") == key);
 
-        public void Save() => _context.SaveChanges();
+        public async Task SaveAsync() => await _context.SaveChangesAsync();
 
         public void Update(TEntity data)
         {

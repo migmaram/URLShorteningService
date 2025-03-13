@@ -8,6 +8,10 @@ namespace URLShorteningService.Tools
         private readonly ApiDbContext _context;
         public IRepository<Url>? _urls;
         public IRepository<Visit>? _visits;
+        public UnitOfWork(ApiDbContext context)
+        {
+            _context = context;
+        }
 
         public IRepository<Url> Urls
         {
@@ -24,14 +28,9 @@ namespace URLShorteningService.Tools
             }
         }
 
-        public UnitOfWork(ApiDbContext context)
+        public async Task SaveAsync()
         {
-            _context = context;
-        }
-
-        public void Save()
-        {
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }
