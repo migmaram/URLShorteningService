@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using URLShorteningService.Data;
+using URLShorteningService.Data.DataContext;
 
-namespace URLShorteningService.Tools
+namespace URLShorteningService.Data.Repositories
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {

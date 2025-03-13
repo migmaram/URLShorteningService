@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using URLShorteningService.Models;
 
-namespace URLShorteningService.Data
+namespace URLShorteningService.Data.DataContext
 {
     public class ApiDbContext : DbContext
     {

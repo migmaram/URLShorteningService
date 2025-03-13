@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using URLShorteningService.Data;
+using URLShorteningService.Data.UnitOfWork;
 
 namespace URLShorteningService.Tools
 {
@@ -13,7 +14,7 @@ namespace URLShorteningService.Tools
         }
 
         // shared counter
-        private static long _counter = 0; 
+        //private static long _counter = 0; 
         // base58 encoding
         private static readonly string Characters = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
         private static readonly int KeyLenght = 6;
