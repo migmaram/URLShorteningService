@@ -1,6 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using URLShorteningService.Data;
+using URLShorteningService.Tools;
 
 namespace URLShorteningService
 {
@@ -21,6 +22,9 @@ namespace URLShorteningService
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnectionString"));
             });
+
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<Sequencer>();
 
             var app = builder.Build();
 

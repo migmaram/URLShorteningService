@@ -6,13 +6,19 @@ namespace URLShorteningService.Tools
 {
     public class Sequencer
     {
+        private readonly IUnitOfWork _unitOfWork;
+        public Sequencer(IUnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+        }
+
         // shared counter
         private static long _counter = 0; 
         // base58 encoding
         private static readonly string Characters = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
         private static readonly int KeyLenght = 6;
 
-        public static async Task<string> GenerateKey(ApiDbContext context)
+        public string GenerateKey()
         {
             //long currentValue;
             bool isUnique = false;
@@ -34,11 +40,10 @@ namespace URLShorteningService.Tools
                 //key = Encode(currentValue);
 
                 key = RandomKey();
-                isUnique = !await context.Urls.AnyAsync(u => u.Key == key);
+                isUnique = !_unitOfWork.Urls.AnyByKey(key);
                 retryCount++;
 
             } while (!isUnique);
-
 
             return key;
         }

@@ -15,10 +15,13 @@ namespace URLShorteningService.Controllers
     [ApiController]
     public class UrlController : ControllerBase
     {
-        private ApiDbContext _context;
-        public UrlController(ApiDbContext context)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly Sequencer _sequencer;
+
+        public UrlController(IUnitOfWork unitOfWork, Sequencer sequencer)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
+            _sequencer = sequencer;
         }
 
         [HttpPost("[action]")]
@@ -27,7 +30,7 @@ namespace URLShorteningService.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            var newUniqeKey = Sequencer.GenerateKey(_context).Result;
+            var newUniqeKey = _sequencer.GenerateKey();
             var today = DateTime.Now;
 
             var url = new Url
@@ -39,8 +42,8 @@ namespace URLShorteningService.Controllers
                 UpdatedAt = today
             };
 
-            _context.Urls.Add(url);
-            _context.SaveChanges();
+            _unitOfWork.Urls.Add(url);
+            _unitOfWork.Save();
 
             return StatusCode(StatusCodes.Status201Created, url);
         }
@@ -48,14 +51,19 @@ namespace URLShorteningService.Controllers
         [HttpGet("[action]/{key}")]
         public IActionResult Shorten([FromRoute] string key)
         {
-            var url = _context.Urls.FirstOrDefault(u => u.Key == key);
-            
+            var url = _unitOfWork.Urls.GetByKey(key);
+
             if (url == null)
                 return NotFound();
 
-            _context.Visits.Add(new Visit { UrlId = url.Id, 
-                VisitedAt = DateTime.Now });
-            _context.SaveChanges();
+            _unitOfWork.Visits.Add(
+                new Visit
+                {
+                    UrlId = url.Id,
+                    VisitedAt = DateTime.Now
+                });
+
+            _unitOfWork.Save();
 
             return Ok(url);
         }
@@ -63,57 +71,56 @@ namespace URLShorteningService.Controllers
         [HttpGet("Shorten/{key}/stats")]
         public IActionResult GetStats(string key)
         {
+            var url = _unitOfWork.Urls.GetByKey(key);
 
-            var urlStats =
-                from urls in _context.Urls
-                where urls.Key == key
-                join visits in _context.Visits on urls.Id equals visits.UrlId into urlVisits
-                select new
-                {
-                    urls.Id,
-                    url = urls.LongUrl,
-                    shortCode = urls.Key,
-                    urls.CreatedAt,
-                    urls.UpdatedAt,
-                    accessCount = urlVisits.ToList().Count()
-                };
-
-            if (!urlStats.Any())
+            if (url == null)
                 return NotFound();
+
+            var urlStats = new
+            {
+                url.Id,
+                url.LongUrl,
+                url.Key,
+                url.CreatedAt,
+                url.UpdatedAt,
+                accessCount = _unitOfWork.Visits.FilteredCount(visit => 
+                    visit.UrlId == url.Id)
+            };
 
             return Ok(urlStats);
         }
 
         [HttpPut("[action]/{key}")]
-        public IActionResult Shorten([FromRoute] string key, [FromBody] Url updatedUrl)
+        public IActionResult Shorten([FromRoute] string key, [FromBody] Url url)
         {
-            var url = _context.Urls.FirstOrDefault(u => u.Key == key);
+            if (!ModelState.IsValid)
+                return BadRequest();
 
-            if (url == null)
+            var existingUrl = _unitOfWork.Urls.GetByKey(key);
+
+            if (existingUrl == null)
                 return NotFound();
 
-            url.LongUrl = updatedUrl.LongUrl;
-            url.UpdatedAt = DateTime.Now;
+            existingUrl.LongUrl = url.LongUrl;
+            existingUrl.UpdatedAt = DateTime.Now;
 
-            _context.Urls.Update(url);
-            _context.SaveChanges();
+            _unitOfWork.Urls.Update(existingUrl);
+            _unitOfWork.Save();
 
-            return Ok(url);
+            return Ok(existingUrl);
         }
 
 
         [HttpDelete("Shorten/{key}")]
         public IActionResult Delete([FromRoute] string key)
         {
-            var url = _context.Urls.FirstOrDefault(u => u.Key == key);
+            var deleted = _unitOfWork.Urls.DeleteByKey(key);
 
-            if (url == null)
+            if (!deleted)
                 return NotFound();
 
-            _context.Urls.Remove(url);
-            _context.SaveChanges();
-
-            return Ok(url);
+            _unitOfWork.Save();
+            return NoContent();
         }
     }
 }
