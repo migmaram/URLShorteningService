@@ -1,10 +1,8 @@
-### URLShorteiningService
+# URLShorteiningService
 
-This is a RESTful API built to shorten long URLs into more readable and easy to share ones. Allows to create short URLs, storing them in a database along with the original ones and other data, retreiving this data allows to redirect, using the short URL, to the original one. It also keeps track of the times an URL is retreived.
+Welcome everyone! This is a RESTful API project built to shorten long URLs into more readable and easy to share ones. It also stores the times a URL is requested allowing to retreive this data as stats.
 
-### Installation
-
-### Installation
+## Installation
 
 1. Clone repository 
     ```
@@ -20,9 +18,9 @@ This is a RESTful API built to shorten long URLs into more readable and easy to 
 4. Run migrations (make sure you have Entity Framework installed)
     1. VS console: `Update-database`
     2. VS Code terminal: `dotnet ef database update`
-5. Run te application
+5. Run the application
 
-### Usage
+## Usage
 
 ### **Create Short URL**
 
@@ -56,7 +54,7 @@ Retrieve the original URL from a short URL using the **`GET`** method
 GET /shorten/{shortUrlKey}
 ```
 
-Response:
+**Response**:
 
 ```json
 200 OK
@@ -81,7 +79,7 @@ PUT /shorten/abc123
 }
 ```
 
-Response:
+**Response**:
 
 ```json
 200 OK
@@ -104,7 +102,7 @@ Delete an existing short URL using the **`DELETE`** method
 DELETE /shorten/{shortUrlKey}
 ```
 
-Response: `204 No Content`
+**Response**: `204 No Content`
 
 ### **Get URL Statistics**
 
@@ -114,7 +112,7 @@ Get statistics for a short URL using the **`GET`** method
 GET /shorten/{ShortUrlKey}/stats
 ```
 
-Response:
+**Response**:
 
 ```json
 200 OK
@@ -132,11 +130,6 @@ Response:
 
 ### Statement
 
-The main goal of building this project was to practice:
+This project was made with practice in mind. 
+Project's idea was grabbed from: [Developer Roadmaps - URL Shortening Service](https://roadmap.sh/projects/url-shortening-service) ✨
 
-- C# coding
-- SOLID principles
-- Entity Framework, code first.
-- Dependency injecton, repository and unitOfWork desing patterns
-
-✨I took the idea from: [Developer Roadmaps - URL Shortening Service](https://roadmap.sh/projects/url-shortening-service)
